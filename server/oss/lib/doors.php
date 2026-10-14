@@ -159,3 +159,28 @@ function groups_all(): array
 {
     return q('SELECT * FROM vr_groups ORDER BY name')->fetchAll();
 }
+
+// ------------------------------------------------------ nove naprave -----
+// Seznam novih (še nesprejetih) naprav je dosegljiv brez prijave, zato mora
+// biti njegova rast omejena: koda za povezavo se zapiše samo ob prvem stiku,
+// stare zapise pa brišemo, da seznam kaže samo naprave, ki so še žive.
+const PENDING_MAX_TOTAL   = 200;   // trda meja velikosti tabele
+const PENDING_MAX_PER_IP  = 10;    // en naslov ne more zasesti seznama
+const PENDING_TTL_MINUTES = 60;    // naprava, ki se ne oglasi toliko časa, ni več nova
+
+function pending_expire(): void
+{
+    q('DELETE FROM vr_pending WHERE last_seen_at < (UTC_TIMESTAMP() - INTERVAL ' . (int)PENDING_TTL_MINUTES . ' MINUTE)');
+}
+
+function pending_can_add(string $ip): bool
+{
+    if ((int)q('SELECT COUNT(*) FROM vr_pending')->fetchColumn() >= PENDING_MAX_TOTAL) return false;
+    $mine = (int)q('SELECT COUNT(*) FROM vr_pending WHERE ip = ?', [$ip])->fetchColumn();
+    return $mine < PENDING_MAX_PER_IP;
+}
+
+function pending_count(): int
+{
+    return (int)q('SELECT COUNT(*) FROM vr_pending')->fetchColumn();
+}

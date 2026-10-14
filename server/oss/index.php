@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('danger', 'Teh vrat ni več na seznamu novih.');
             redirect('index.php');
         }
+        // Ključ se izroči samo proti kodi, ki jo je administrator videl in
+        // primerjal z napravo - ne proti trenutni vsebini tabele.
+        $pairCode = strtoupper((string)($_POST['pair_code'] ?? ''));
+        if (!preg_match('/^[A-Z0-9]{4,8}$/', $pairCode)) {
+            flash('danger', 'Koda za povezavo ni veljavna. Osvežite stran in poskusite znova.');
+            redirect('index.php');
+        }
         $token = bin2hex(random_bytes(32));
         $existing = (int)($_POST['existing_id'] ?? 0);
         $groupId = (int)($_POST['group_id'] ?? 0) ?: null;
@@ -41,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$door) redirect('index.php');
             q('UPDATE vr_doors SET mac = NULL WHERE mac = ? AND id <> ?', [$mac, $existing]);
             q('UPDATE vr_doors SET mac = ?, token_hash = ?, token_plain = ?, pair_code = ?, boot_id = NULL WHERE id = ?',
-              [$mac, hash('sha256', $token), $token, $p['pair_code'], $existing]);
+              [$mac, hash('sha256', $token), $token, $pairCode, $existing]);
             bump_rev([$existing]);
             $doorId = $existing;
             $name = $door['name'];
@@ -59,10 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             q('INSERT INTO vr_doors (name, description, group_id, mac, token_hash, token_plain, pair_code, status, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, 2, ?)',
               [$name, trim((string)($_POST['description'] ?? '')), $groupId, $mac, hash('sha256', $token), $token,
-               $p['pair_code'], now_utc()]);
+               $pairCode, now_utc()]);
             $doorId = (int)db()->lastInsertId();
         }
-        log_event($doorId, (int)$me['id'], 'adopt', "Sprejeta naprava $mac (koda {$p['pair_code']}) kot $name ({$me['username']}).");
+        log_event($doorId, (int)$me['id'], 'adopt', "Sprejeta naprava $mac (koda $pairCode) kot $name ({$me['username']}).");
         flash('success', "Vrata $name so sprejeta. Ključ dobijo ob naslednjem preverjanju (do 1 minute).");
         redirect('index.php');
     }
@@ -90,9 +97,14 @@ if ($canAdopt) {
         echo '<div class="card border-warning mb-4"><div class="card-body"><h5 class="card-title">Nove naprave čakajo na sprejem</h5>'
            . '<p class="small text-muted">Primerjajte <b>kodo za povezavo</b> s kodo na strani naprave (http://&lt;IP vrat&gt;:5000) '
            . 'ali v serijskem dnevniku. Sprejmite samo, če se ujemata.</p>';
+        if (pending_count() >= 160) {
+            echo '<div class="alert alert-warning py-2 small">Na seznamu je že ' . pending_count() . ' naprav. '
+               . 'Če se prava vrata ne prikažejo, odstranite neznane zapise s <b>Odstrani s seznama</b> in se bodo prijavila znova.</div>';
+        }
         foreach ($pending as $p) {
             echo '<form method="post" class="form-row align-items-end border-top pt-2 mt-2">' . csrf_field()
                . '<input type="hidden" name="mac" value="' . h($p['mac']) . '">'
+               . '<input type="hidden" name="pair_code" value="' . h($p['pair_code']) . '">'
                . '<div class="col-md-3 small"><b>Koda: <span class="text-monospace">' . h($p['pair_code']) . '</span></b><br>MAC '
                . h($p['mac']) . '<br>IP ' . h($p['local_ip'] ?: '?') . ' · ' . h($p['fw_version']) . '<br>' . h(fmt_ago($p['last_seen_at'])) . '</div>'
                . '<div class="col-md-2"><label class="small">Ime novih vrat</label><input class="form-control form-control-sm" name="name" placeholder="npr. V1"></div>'

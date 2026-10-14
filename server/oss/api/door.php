@@ -87,14 +87,20 @@ if ($door && $door['token_plain'] && hash_equals((string)$door['pair_code'], $pa
     reply(200, ['ok' => true, 'state' => 'adopted', 'token' => $door['token_plain']]);
 }
 
-$pendingCount = (int)q('SELECT COUNT(*) FROM vr_pending')->fetchColumn();
 $exists = q('SELECT mac FROM vr_pending WHERE mac = ?', [$mac])->fetch();
 if ($exists) {
-    q('UPDATE vr_pending SET pair_code = ?, ip = ?, local_ip = ?, fw_version = ?, last_seen_at = ? WHERE mac = ?',
-      [$pair, $ip, mb_substr((string)($in['local_ip'] ?? ''), 0, 45), $fw, $now, $mac]);
-} elseif ($pendingCount < 50) {
-    q('INSERT INTO vr_pending (mac, pair_code, ip, local_ip, fw_version, first_seen_at, last_seen_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [$mac, $pair, $ip, mb_substr((string)($in['local_ip'] ?? ''), 0, 45), $fw, $now, $now]);
+    // Koda za povezavo se pozneje NE posodablja. Zapisala se je ob prvem stiku
+    // in je vez med napravo in administratorjem; če bi jo vsak neprijavljeni
+    // klicatelj lahko prepisal, bi ta ob sprejemu prevzel ključ vrat namesto
+    // pravih vrat.
+    q('UPDATE vr_pending SET ip = ?, local_ip = ?, fw_version = ?, last_seen_at = ? WHERE mac = ?',
+      [$ip, mb_substr((string)($in['local_ip'] ?? ''), 0, 45), $fw, $now, $mac]);
+} else {
+    pending_expire();  // pozabljene naprave ne smejo držati seznama polnega
+    if (pending_can_add($ip)) {
+        q('INSERT INTO vr_pending (mac, pair_code, ip, local_ip, fw_version, first_seen_at, last_seen_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [$mac, $pair, $ip, mb_substr((string)($in['local_ip'] ?? ''), 0, 45), $fw, $now, $now]);
+    }
 }
 reply(200, ['ok' => true, 'state' => 'pending']);
