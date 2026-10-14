@@ -195,24 +195,29 @@ void checkPhones() {
 const char kPage[] = R"HTML(<!doctype html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Door</title>
+<title>Odprtje vrat / Door</title>
 <style>
   :root{color-scheme:dark light}
   body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;
        justify-content:center;gap:14px;padding:20px;font:17px system-ui,sans-serif;
        background:#0f1115;color:#e8eaf0;text-align:center}
   @media (prefers-color-scheme:light){body{background:#f5f6fa;color:#14161c}}
+  h1{font-size:22px;line-height:1.3;margin:0}
+  p{margin:0;max-width:300px;font-size:15px;line-height:1.45;opacity:.85}
   input{width:240px;padding:14px;border-radius:12px;border:1px solid #8a90a0;font-size:18px;
         background:transparent;color:inherit;text-align:center}
   #b{width:240px;padding:16px;border-radius:12px;border:0;background:#5b6cff;color:#fff;
      font-size:20px;font-weight:600}
   #b:disabled{opacity:.5}
-  #s{opacity:.8;min-height:48px;max-width:280px}
+  #s{opacity:.9;min-height:48px;max-width:300px;line-height:1.45;white-space:pre-line}
+  small{opacity:.6;max-width:300px;font-size:13px;line-height:1.5}
 </style></head>
 <body>
-  <input id="u" placeholder="Name (e.g. James Alice)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <h1>Odprtje vrat<br>Door access</h1>
+  <p>Vpišite ime in PIN iz rezervacije.<br>Enter the name and PIN from your booking.</p>
+  <input id="u" placeholder="Ime in priimek / Full name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
   <input id="p" placeholder="PIN" type="password" inputmode="numeric" autocomplete="off">
-  <button id="b">Open</button>
+  <button id="b">Odpri / Open</button>
   <div id="s"></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -224,11 +229,11 @@ $('b').onclick=async()=>{
       body:'u='+encodeURIComponent($('u').value)+'&p='+encodeURIComponent($('p').value)});
     const j=await r.json();
     if(j.ok){
-      const t=j.s>=120?Math.round(j.s/60)+' minutes':j.s+' seconds';
-      $('s').textContent='Unlocked for '+t+'. You will be disconnected from this Wi-Fi in a moment.';
+      const t=j.s>=120?Math.round(j.s/60)+' min':j.s+' s';
+      $('s').textContent='Odprto za '+t+' / Unlocked for '+t+'.\nOdklop iz omrežja sledi.\nYou will be disconnected shortly.';
       $('p').value='';
     } else { $('s').textContent=j.msg; }
-  }catch(e){ $('s').textContent='Could not reach the door'; }
+  }catch(e){ $('s').textContent='Ni povezave z vrati / Could not reach the door'; }
   b.disabled=false;
 };
 </script></body></html>)HTML";
@@ -356,11 +361,11 @@ esp_err_t handleOpen(httpd_req_t* req) {
   Strikes* accS = user.empty() ? nullptr : &accountFor(user);
   if (isBlocked(ipS) || (accS && isBlocked(*accS))) {
     xSemaphoreGive(s_mutex);
-    return sendJson(req, jsonResult(false, "Too many attempts. Try again later.", 0), "429 Too Many Requests");
+    return sendJson(req, jsonResult(false, "Preveč poskusov, poskusite pozneje / Too many attempts, try later", 0), "429 Too Many Requests");
   }
   if (ctl::pinsBlocked()) {
     xSemaphoreGive(s_mutex);
-    return sendJson(req, jsonResult(false, "The door is locked by the administrator.", 0));
+    return sendJson(req, jsonResult(false, "Vrata je zaklenil administrator / Locked by the administrator", 0));
   }
 
   String kind;
@@ -406,7 +411,7 @@ esp_err_t handleOpen(httpd_req_t* req) {
   xSemaphoreGive(s_mutex);
   LOGW("portal", "failed sign-in for '%s'", user.c_str());
   delay(PORTAL_FAIL_DELAY_MS);  // throttles guessing for everyone
-  return sendJson(req, jsonResult(false, "Wrong name or PIN", 0));
+  return sendJson(req, jsonResult(false, "Napačno ime ali PIN / Wrong name or PIN", 0));
 }
 
 // Captive portal: every other URL (the phone's "am I online?" checks
