@@ -1,0 +1,12 @@
+# Arduino CLI project settings (the Arduino IDE ignores this file; choose the
+# same options in the Tools menu, see ../../README.md).
+#
+#   arduino-cli compile                 (from this folder)
+#   arduino-cli upload -p COM5          (Linux: -p /dev/ttyACM0)
+#
+# 8 MB flash, stock "8M with spiffs (3MB APP/1.5MB SPIFFS)" scheme: two
+# firmware slots for updates from the server + 1.5 MB LittleFS for calendars.
+# Other boards (compiled and checked for size):
+#   16 MB: FlashSize=16M,PartitionScheme=app3M_fat9M_16MB
+#    4 MB: FlashSize=4M,PartitionScheme=min_spiffs  (updates work, only 128 KB for calendars)
+default_fqbn: esp32:esp32:esp32s3:FlashSize=8M,PartitionScheme=default_8MB

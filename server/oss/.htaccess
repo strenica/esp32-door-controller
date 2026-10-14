@@ -1,0 +1,13 @@
+# Vrata – nastavitve za Apache
+Options -Indexes
+DirectoryIndex index.php
+
+<Files ~ "^(config\.php|config\.sample\.php|install\.sql|README\.md)$">
+    Require all denied
+</Files>
+
+# Nekateri strežniki ne posredujejo glave Authorization v PHP.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>

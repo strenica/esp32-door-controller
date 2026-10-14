@@ -1,0 +1,30 @@
+# ---------------------------------------------------------------------------
+# Private / local configuration - never commit these
+# ---------------------------------------------------------------------------
+# Server: database credentials, base_url, site_name. Copy config.sample.php
+# (or config.docker.php for the local test) to config.php.
+server/oss/config.php
+
+# Firmware: per-device server URL, local admin password, Wi-Fi credentials.
+# Copy secrets.sample.h to secrets.h.
+esp32s3/vrata/secrets.h
+
+# ---------------------------------------------------------------------------
+# Build output
+# ---------------------------------------------------------------------------
+*.bin
+*.bin.gz
+*.elf
+*.map
+build/
+esp32s3/vrata/build/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*~
+*.swp
+.vscode/
+.idea/
