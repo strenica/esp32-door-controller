@@ -31,3 +31,7 @@
 // Private iCal URL for status 3 (the door's own calendar). Normally left empty
 // here and set per door on the server.
 #define DEFAULT_LOCAL_CALENDAR_URL  ""
+
+// Password of the setup network (VRATA-SETUP-xxxx), at least 8 characters.
+// The default in config.h is public, so set your own before flashing.
+#define AP_PASSWORD                 "change-me-too"

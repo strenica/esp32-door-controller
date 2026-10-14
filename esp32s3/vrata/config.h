@@ -116,7 +116,12 @@
 // ------------------------------------------------------------- network -----
 #define WEB_PORT                    5000   // same as Flask, as in the manual
 #define AP_SSID_PREFIX              "VRATA-SETUP-"
-#define AP_PASSWORD                 "vrata-setup"   // WPA2, >= 8 characters
+// WPA2, at least 8 characters. The default below is public, so anyone in
+// Wi-Fi range could join a door's setup network while it is being put into
+// service. Override it in secrets.h.
+#ifndef AP_PASSWORD
+#define AP_PASSWORD                 "vrata-setup"
+#endif
 #define AP_FALLBACK_AFTER_MS        60000UL  // no Wi-Fi this long -> setup AP
 #define AP_STOP_AFTER_CONNECTED_MS  30000UL  // Wi-Fi back this long -> stop it
 #define SETUP_AP_ON_DEMAND_MS       (10UL * 60UL * 1000UL)  // short BOOT press

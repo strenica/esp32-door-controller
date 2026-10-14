@@ -308,7 +308,7 @@ cp esp32s3/vrata/secrets.sample.h esp32s3/vrata/secrets.h
 - `DEFAULT_SERVER_URL` (`secrets.h`): address of your management server, no trailing slash, with a valid HTTPS certificate.
 - `DEFAULT_ADMIN_PASSWORD` (`secrets.h`): password of the door's **local** page (user `admin`). Change it from the placeholder.
 - `DEFAULT_WIFI1_SSID/PASSWORD` … `3` (`secrets.h`): optional. You can also enter them later through the setup network, or set them on the server.
-- `AP_PASSWORD` (`config.h`): password of the setup network. Change the default `vrata-setup`.
+- `AP_PASSWORD` (`secrets.h`): password of the setup network (`VRATA-SETUP-xxxx`). The default in `config.h` is public, so set your own before flashing.
 - `FW_VERSION` (`config.h`): raise it for every new release, e.g. `2.0.1`. The server reads it from the uploaded file, and a door installs only a version it isn't already running.
 
 `secrets.h` is optional: without it the generic defaults in `config.h` apply and the sketch still compiles.
