@@ -61,6 +61,11 @@ Then open <http://localhost:8000/install.php> and create the first
 administrator. Tear down with `docker compose down -v` (the `-v` also drops the
 database volume).
 
+To test with a **real door** on the same network, change `base_url` in
+`config.php` to this machine's LAN address (e.g. `http://192.168.1.10:8000`) and
+set the door's server URL to the same. The doors download their firmware from
+`base_url`, so `localhost` will not work for them.
+
 ## Installation (phpMyAdmin)
 1. **Keep a copy of the old site.** Rename the old `oss` folder (e.g. `oss_old`), or download it first.
 2. **Upload the files.** Put the contents of `server/oss/` into the web folder `oss`, so that `https://<your-domain>/oss/login.php` exists.
@@ -126,6 +131,7 @@ How it behaves:
   - LOCK brings the network back immediately.
 - **Wrong guesses:** after 5 wrong tries, that phone waits 1 minute. The account waits 1, 2, 4, then 8 minutes.
 - **Unlock log:** every unlock appears in **Dnevnik** (log) with the username.
+- **If the sign-in page doesn't open by itself:** the door is always at `4.3.2.1`, so the user can type that into a browser. Put this where it is visible *before* connecting — a sticker on the door, or at the end of the network name (e.g. `Vrata-4.3.2.1`, set under *Portal → ime omrežja*). It cannot go on the sign-in page itself: anyone reading it is already there.
 
 ### Roles and users
 - **Vloge** (roles): tick what each role may do: view doors, change status, calendars, gym users, portal settings, intervals, monitoring, log, device name, Wi-Fi, firmware, users. *Administrator* always has everything.
@@ -133,8 +139,10 @@ How it behaves:
 - **Example:** a kindergarten employee with role *Osebje* and only the VRTEC group sees and changes only the kindergarten doors.
 
 ### Firmware updates
-1. In the Arduino IDE use *Sketch → Export Compiled Binary*, then upload `vrata.ino.bin` (not `.merged.bin`) on **Programska oprema** (firmware). The version is read from the file.
-2. Assign it to the doors you want. Each door installs it at its next contact, restarts, and must reach the server again within 10 minutes. Otherwise it goes back to the previous version and the monitoring page shows the version as rejected.
+1. **Raise `FW_VERSION` in `vrata/config.h` first.** A door skips any version it is already running, so uploading a build with the same version number does nothing at all.
+2. Build it: *Sketch → Export Compiled Binary* in the Arduino IDE, or `arduino-cli compile --export-binaries esp32s3/vrata` (writes `esp32s3/vrata/build/esp32.esp32.esp32s3/vrata.ino.bin`).
+3. Upload `vrata.ino.bin` — **not** `.merged.bin` — on **Programska oprema** (firmware). The version is read from the file.
+4. Assign it to the doors you want. Each door installs it at its next contact, restarts, and must reach the server again within 10 minutes. Otherwise it goes back to the previous version and the monitoring page shows the version as rejected.
 
 ### Wi-Fi from the server
 On the door's page (*Wi-Fi naprave*), tick "Wi-Fi omrežja nastavlja strežnik" (Wi-Fi networks are set by the server) and enter up to 3 networks. If the door can't connect with the new networks within 5 minutes, it returns to its previous ones and reports this in monitoring. Without the tick, the door keeps its own networks.

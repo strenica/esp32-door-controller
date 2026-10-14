@@ -10,8 +10,11 @@ return [
     'db_user' => 'vrata',
     'db_pass' => 'vrata',
 
-    // Mora ustrezati naslovu, na katerem teče lokalni strežnik (brez /oss, ker
-    // vgrajeni PHP strežnik streže kar iz mape oss).
+    // Mora ustrezati naslovu, na katerega se povezujejo VRATA, ne samo vi.
+    // Za brskalnik na istem računalniku je localhost pravilen, a prava naprava
+    // localhost razume kot sebe. Za preizkus s pravimi vrati vpišite IP tega
+    // računalnika v omrežju, npr. 'http://192.168.1.10:8000' - vrata s tega
+    // naslova prenašajo tudi posodobitve programske opreme.
     'base_url' => 'http://localhost:8000',
 
     // NUJNO za lokalni test: na http bi s true piškotek zavrnil in prijava bi se ponavljala.

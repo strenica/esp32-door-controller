@@ -44,7 +44,7 @@
 #endif
 
 #define FW_NAME     "VRATA-ESP32S3"
-#define FW_VERSION  "2.1.0"   // the server reads this from the .bin on upload
+#define FW_VERSION  "2.1.2"   // the server reads this from the .bin on upload
 
 // ---------------------------------------------------------------- pins -----
 #define PIN_RELAY               4
