@@ -1,6 +1,6 @@
-// LittleFS storage for the downloaded calendars (was /home/admin/ical_event).
+// LittleFS storage for the downloaded calendars (was a directory on the Pi).
 //
-// The Pi kept ONE cal.ics that both calendar.sh (local) and the remote
+// The Pi kept ONE calendar file that both the local and the remote
 // download overwrote, so in status 3 the two fought over the same file.
 // The port keeps one file per source and evaluates the one that matches the
 // current mode.

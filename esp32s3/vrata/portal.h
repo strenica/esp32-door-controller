@@ -1,4 +1,4 @@
-// PIN portal (from Esp1/door_firmware_portal), switched on
+// PIN portal (ported from the standalone gym-door firmware), switched on
 // per door on the server.
 //
 // Phones join the open Wi-Fi of the door, a sign-in page pops up, and a

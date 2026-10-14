@@ -84,7 +84,7 @@ void noteOfflineEdit(const String& what) {
   if (cloud::adopted()) cloud::logEvent("offline_edit", "Lokalna sprememba brez povezave: " + what);
 }
 
-// calendar.sh / remote_script.sh for the active mode.
+// The calendar download of the active mode.
 bool refreshCalendar(Mode m) {
   const settings::Data cfg = settings::get();
   const bool local = m == Mode::LocalSchedule;

@@ -1,5 +1,5 @@
-// Operating modes and background jobs (replaces cron, the lock file,
-// ical.py, icalNOTIME.py, calendar.sh, remote_script.sh and remote_ical.py).
+// Operating modes and background jobs (replaces the Pi's cron jobs, lock file,
+// calendar scheduler and manual-override script).
 //
 // The mode comes from the server's status for this door:
 //   0 LOCK -> Stopped, 1 OPEN -> ManualOn, 2 SCHEDULE REMOTE -> RemoteSchedule
@@ -56,7 +56,7 @@ void requestCalendarRefresh();
 bool pinsBlocked();                  // LOCK: no PIN opens the door
 schedule::Source bookingSource();    // calendar that holds the bookings
 
-// Local web actions (named after the buttons of the original app.py).
+// Local web actions (named after the buttons of the original web UI).
 // While the server manages the door they only report that.
 void actionStart(Flashes& f);
 void actionStop(Flashes& f);

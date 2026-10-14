@@ -214,7 +214,7 @@ Result request(const String& urlIn, LimitedSink& sink, const Req& req) {
   return r;
 }
 
-// Same check as app.py (first line must be BEGIN:VCALENDAR) plus a check
+// Same check as before (first line must be BEGIN:VCALENDAR) plus a check
 // for END:VCALENDAR at the end, so a cut-off download is never used.
 bool looksLikeCalendar(const char* path, String& why) {
   fs::File f = LittleFS.open(path, "r");

@@ -2,7 +2,7 @@
 //
 // Werkzeug stored scrypt(N=32768, r=8) hashes, which need 32 MB of RAM to
 // verify, so the port uses PBKDF2-HMAC-SHA256 (hardware SHA) instead. The
-// old user_data.txt hash therefore cannot be carried over.
+// Pi's stored hash therefore cannot be carried over.
 // Sessions are random 128-bit cookies kept in RAM (lost on reboot), each with
 // its own CSRF token and pending "flash" messages.
 #pragma once

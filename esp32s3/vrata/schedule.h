@@ -1,6 +1,6 @@
-// Expanded calendar occurrences for the relay decision (was ical.py).
+// Expanded calendar occurrences for the relay decision.
 //
-// ical.py ran every 5 minutes from cron, slept 10 s, then held the pin HIGH
+// The original script ran every 5 minutes from cron, slept 10 s, then held the pin HIGH
 // only for events already in progress, so an event started up to ~5 min
 // late. Here the calendar is expanded into a small in-RAM list (rebuilt
 // every 5 min and after each download) and the control task checks it every

@@ -80,7 +80,7 @@
 #define ADMIN_USERNAME              "admin"
 // Local web page password (http://<ip>:5000), user "admin". Override in
 // secrets.h and change it before flashing; the default is a placeholder.
-// The Pi's scrypt hash in user_data.txt cannot be imported.
+// The Pi's scrypt hash cannot be imported.
 #ifndef DEFAULT_ADMIN_PASSWORD
 #define DEFAULT_ADMIN_PASSWORD      "change-me-please"
 #endif
@@ -126,7 +126,8 @@
 
 // ------------------------------------------------- PIN portal (gym door) -----
 // Open Wi-Fi + sign-in page that unlocks the door with username + PIN
-// (from Esp1). Switched on per door on the server.
+// (ported from the standalone gym-door firmware). Switched on per door on the
+// server.
 #define PORTAL_DEFAULT_SSID         "Vrata"
 #define PORTAL_MAX_CLIENTS          4
 #define PORTAL_KICK_DELAY_MS        4000     // show "Unlocked", then disconnect
@@ -148,17 +149,17 @@
 // ---------------------------------------------------------- scheduling -----
 #define SCHEDULE_REBUILD_INTERVAL_MS  (5UL * 60UL * 1000UL)
 #define NET_RETRY_AFTER_FAILURE_MS    (60UL * 1000UL)
-#define CONTROL_LOOP_MS               250UL    // relay + button (ical.py: 5 s)
-// Same look-ahead window as ical.py: now - 2 days .. now + 10 days
+#define CONTROL_LOOP_MS               250UL    // relay + button (the Pi: 5 s)
+// Same look-ahead window as the Pi: now - 2 days .. now + 10 days
 #define WINDOW_PAST_S                 (2L * 86400L)
 #define WINDOW_FUTURE_S               (10L * 86400L)
-// ical.py: "dtend = DTEND if present else dtstart + 1 hour"
+// As before: "dtend = DTEND if present else dtstart + 1 hour"
 #define DEFAULT_EVENT_DURATION_S      3600
-// All-day events crashed ical.py (a date has no astimezone()). They are
+// All-day events crashed the Pi's parser (a date has no astimezone()). They are
 // ignored by default; 1 = keep the door open for the whole day instead.
 #define ALLDAY_EVENTS_ACTIVATE        0
 #define MAX_OCCURRENCES               400
-// Manual ON (Start / icalNOTIME.py) lived in /tmp and was lost on reboot.
+// Manual ON (Start on the Pi's page) lived in /tmp and was lost on reboot.
 // Kept that way (a door should not come back open by itself) unless 1.
 #define RESTORE_MANUAL_ON_AT_BOOT     0
 

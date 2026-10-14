@@ -228,7 +228,7 @@ void handleChangePasswordPost() {
   } else {
     auth::setPassword(newPw);
     LOGI("web", "admin password changed");
-    auth::endSession(s);  // app.py: logout_user() + redirect to login
+    auth::endSession(s);  // logout + redirect to login, as before
     s_server.sendHeader("Set-Cookie", "vrata_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict");
     redirect("/login?m=pw");
     return;
@@ -407,7 +407,7 @@ void handleIndexPost() {
     }
     ctl::actionSaveSettings(s_server.arg("device_name"), ssid, pass, f);
   }
-  redirect("/");  // post/redirect/get, like app.py
+  redirect("/");  // post/redirect/get, as before
 }
 
 // ------------------------------------------------------ misc endpoints -----

@@ -1,10 +1,10 @@
-// HTTP(S) transfers (replaces requests.get() and the wget in calendar.sh /
-// remote_script.sh).
+// HTTP(S) transfers (replaces requests.get() and the Pi's calendar wget
+// scripts).
 //
 // Certificates are verified against the Mozilla root store compiled into
 // the ESP32 core. Only one transfer runs at a time (a TLS session needs
 // ~40 KB of RAM). Calendars are streamed to a temp file, validated and only
-// then replace the old file, like app.py's temp_cal.ics -> cal.ics.
+// then replace the old file - the same temp-then-swap as before.
 #pragma once
 #include <Arduino.h>
 

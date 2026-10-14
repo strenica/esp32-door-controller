@@ -2,8 +2,8 @@
 //
 // There is no IANA tz database on the ESP32, so each zone is described by a
 // POSIX TZ rule ("CET-1CEST,M3.5.0,M10.5.0/3"). A built-in table maps common
-// TZIDs (all European zones, UTC, the Microsoft names from ical.py's
-// MICROSOFT_TZ_MAP, a few others) to rules; unknown TZIDs can still be
+// TZIDs (all European zones, UTC, the Microsoft names seen in Outlook and
+// Exchange exports, a few others) to rules; unknown TZIDs can still be
 // resolved from the calendar's own VTIMEZONE block (see ical.cpp).
 // Historic DST changes are not modelled: the current rule is applied to all
 // years, which is fine for a schedule that only looks 2 days back.

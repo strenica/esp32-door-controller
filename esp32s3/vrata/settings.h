@@ -1,7 +1,7 @@
 // Persistent settings in NVS (flash key/value store).
 //
-// Replaces the Pi's state files (calendar.sh, remote.txt, status.cfg,
-// user_data.txt, crontab ...). Most values now come from the server and are
+// Replaces the Pi's state files (crontab and several text files on disk).
+// Most values now come from the server and are
 // cached here, so the door keeps working with its last settings when the
 // server or the internet is down.
 #pragma once

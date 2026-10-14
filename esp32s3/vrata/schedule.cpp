@@ -130,7 +130,7 @@ bool activeAt(Source src, int64_t nowUtc, bool bookingsAreAccessOnly, ical::Occu
   for (const ical::Occurrence& o : s_occ) {
     if (o.start > nowUtc) break;  // sorted by start
     if (bookingsAreAccessOnly && o.user[0]) continue;
-    if (nowUtc <= o.end) {        // same inclusive test as ical.py
+    if (nowUtc <= o.end) {        // same inclusive test as before
       if (which) *which = o;
       return true;
     }

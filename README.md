@@ -181,18 +181,18 @@ internet is down.
 The firmware uses no third-party libraries, only what ships with the ESP32
 Arduino core.
 
-| Raspberry Pi 5 | ESP32-S3 |
+| Original (Raspberry Pi 5) | This version (ESP32-S3) |
 |---|---|
-| `web-gui/app.py` (Flask) + templates | `webui.cpp`, `auth.cpp` (local page) and the server website |
-| `ical.py` (icalendar, recurring_ical_events, pytz) | `ical.cpp`, `tzconv.cpp`, `schedule.cpp` |
-| `icalNOTIME.py`, lock file, crontab | `controller.cpp` (modes, FreeRTOS tasks) |
-| `remote_ical.py`, `sqlcsv.php`, `status.php` | `cloud.cpp` ↔ `server/oss/api/door.php` |
-| `calendar.sh`, `remote_script.sh` (wget) | `fetch.cpp` |
-| state files, `user_data.txt` | NVS (`settings.cpp`) + LittleFS (`storage.cpp`) |
-| `pinctrl set 23 dh/dl` | `relay.cpp` (GPIO4) |
-| NetworkManager, timesyncd, `/etc/hostname` | `netmgr.cpp`; the name comes from the server |
-| Raspberry Pi Connect / SSH | firmware updates from the server, `/update`, `/log` |
-| gym firmware `door_firmware_portal.ino` | `portal.cpp` (users and PINs now on the server) |
+| Flask web UI + templates | `webui.cpp`, `auth.cpp` (local page) and the server website |
+| iCal parsing (icalendar, recurring_ical_events, pytz) | `ical.cpp`, `tzconv.cpp`, `schedule.cpp` |
+| Manual override, lock file, cron jobs | `controller.cpp` (modes, FreeRTOS tasks) |
+| Calendar and status endpoints | `cloud.cpp` ↔ `server/oss/api/door.php` |
+| Calendar download shell scripts (wget) | `fetch.cpp` |
+| State files on disk | NVS (`settings.cpp`) + LittleFS (`storage.cpp`) |
+| GPIO switching (`pinctrl`) | `relay.cpp` (GPIO4) |
+| NetworkManager, timesyncd, hostname file | `netmgr.cpp`; the name comes from the server |
+| Remote shell access | firmware updates from the server, `/update`, `/log` |
+| Standalone gym-door firmware | `portal.cpp` (users and PINs now on the server) |
 
 ## Parts per door
 
@@ -319,7 +319,7 @@ Fixed bugs (agreed before porting):
 
 New compared with the Pi:
 
-6. **The server replaces `sqlcsv.php` / `status.php` / cron.** Each door has its own key, the server doesn't publish the calendar links, and settings, monitoring and the log live on the website.
+6. **The server replaces the old CSV/status endpoints and cron.** Each door has its own key, the server doesn't publish the calendar links, and settings, monitoring and the log live on the website.
 7. **The local page is read-only while the server is reachable.** The Pi's page was always editable.
 8. **Manual ON comes back locked after a power cut, as on the Pi.** If the server still says OPEN, the first contact opens the door again.
 9. **Every calendar download is validated** (`BEGIN:`/`END:VCALENDAR`) before it replaces the stored one.

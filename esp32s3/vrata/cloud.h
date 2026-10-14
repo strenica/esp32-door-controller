@@ -2,8 +2,8 @@
 //
 // Every poll interval the door POSTs its state to <server>/api/door.php and
 // gets its full configuration back (status, calendars, intervals, portal,
-// Wi-Fi, assigned firmware). This replaces sqlcsv.php / status.php and the
-// cron jobs of the Pi.
+// Wi-Fi, assigned firmware). This replaces the old CSV/status endpoints and
+// the cron jobs of the Pi.
 //
 //  - New door: sends its MAC + pairing code and shows up on the server as
 //    "pending"; after an admin adopts it, the next reply carries its key.

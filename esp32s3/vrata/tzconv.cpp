@@ -109,10 +109,10 @@ const Entry kZones[] = {
     {"Europe/Tirane", kCET}, {"Europe/San_Marino", kCET}, {"Europe/Vatican", kCET},
     {"Europe/Gibraltar", kCET}, {"Africa/Ceuta", kCET}, {"Arctic/Longyearbyen", kCET},
     {"CET", kCET}, {"MET", kCET},
-    // Microsoft names (ical.py MICROSOFT_TZ_MAP + common Outlook exports)
+    // Microsoft names (Outlook and Exchange exports)
     {"Central European Standard Time", kCET}, {"Central Europe Standard Time", kCET},
     {"W. Europe Standard Time", kCET}, {"Romance Standard Time", kCET},
-    {"Greenwich Standard Time", kUK},  // ical.py mapped this to Europe/London
+    {"Greenwich Standard Time", kUK},  // mapped to Europe/London, as before
     {"GMT Standard Time", kUK},
     {"E. Europe Standard Time", kEET}, {"FLE Standard Time", kEET},
     {"GTB Standard Time", kEET},

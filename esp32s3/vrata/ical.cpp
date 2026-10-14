@@ -1028,7 +1028,7 @@ class Parser {
     } else if (!ev.dtstart.tzid.empty()) {
       z.rule = resolveTz(ev.dtstart.tzid);
       if (!z.rule) {
-        ++st_.skippedTz;  // same as ical.py: unrecognized timezone -> skip
+        ++st_.skippedTz;  // unrecognized timezone -> skip, as before
         return;
       }
     } else {
@@ -1041,7 +1041,7 @@ class Parser {
     const int64_t dtLocal = civil::toSeconds(ev.dtstart.dt);
     const int64_t startUtc = z.toUtc(dtLocal);
 
-    int64_t dur = opt_.defaultDurationS;  // ical.py: no DTEND -> start + 1 hour
+    int64_t dur = opt_.defaultDurationS;  // no DTEND -> start + 1 hour, as before
     int64_t allDayDays = 1;
     if (allDay) {
       if (ev.hasDtend && ev.dtend.valid) {
