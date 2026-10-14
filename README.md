@@ -48,8 +48,11 @@ and receives its settings.
 ## Quick start (local test)
 
 The whole test stack runs in containers; nothing is installed on the host.
+Run these from the repository root:
 
 ```bash
+git clone https://github.com/strenica/esp32-door-controller
+cd esp32-door-controller
 cp server/oss/config.docker.php server/oss/config.php
 docker compose up -d
 ```
