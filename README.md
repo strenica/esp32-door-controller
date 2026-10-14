@@ -222,25 +222,81 @@ Arduino core.
 
 ## Build and flash
 
-**Arduino IDE 2.x.** Install *esp32 by Espressif Systems* 3.x (tested with 3.3.12), open `vrata/vrata.ino`, and choose in **Tools**:
+Install *esp32 by Espressif Systems* 3.x (tested with 3.3.12) in the Arduino IDE,
+open `vrata/vrata.ino`, and choose in **Tools**:
 
 | Setting | 8 MB board (recommended) | 16 MB board | 4 MB board |
 |---|---|---|---|
 | Board | ESP32S3 Dev Module | ESP32S3 Dev Module | ESP32S3 Dev Module |
 | Flash Size | 8MB | 16MB | 4MB |
 | Partition Scheme | **8M with spiffs (3MB APP/1.5MB SPIFFS)** | 16M Flash (3MB APP/9.9MB FATFS) | Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS) |
-| USB CDC On Boot | Disabled (use the **COM/UART** USB port) | same | same |
+| USB CDC On Boot | Disabled | same | same |
 
 The firmware is about 1.45 MB, so the 4 MB *Default* scheme is too small. Updates from the server need a scheme with two app slots; every scheme above has them.
 
-**Arduino CLI**, Windows or Linux. These commands use the settings in `sketch.yaml` (8 MB):
+With those settings in place, the IDE's **Upload** button does the same as the Arduino CLI commands below.
 
-```bash
-arduino-cli compile --upload -p COM5 esp32s3/vrata
-arduino-cli monitor -p COM5 -c baudrate=115200
-```
+### Which USB socket to use
 
-On Linux the port is usually `/dev/ttyACM0`. You also need `sudo usermod -aG dialout $USER` once, then log in again.
+A DevKitC-1 has **two USB-C sockets** and they are not interchangeable:
+
+| Socket | Windows | Linux | Arduino `Serial` log |
+|---|---|---|---|
+| **UART** (CP2102N bridge) | `COMx`, "Silicon Labs CP210x" | `/dev/ttyUSB0` | **yes** |
+| **USB** (native USB-JTAG, GPIO19/20) | `COMx`, "USB Serial Device" | `/dev/ttyACM0` | only if *USB CDC On Boot* is **Enabled** |
+
+The settings above use *USB CDC On Boot: Disabled*, so the firmware's log goes to
+UART0 — that is, **the log only shows up on the UART socket**. Flashing works over
+either socket.
+
+Either plug into the **UART** socket, or set *USB CDC On Boot* to **Enabled** and
+keep using the USB socket (then the log appears there too).
+
+### Flashing on Windows
+
+1. **Driver.** The UART socket is a Silicon Labs CP2102N bridge; Windows normally
+   installs it on its own. If no port ever appears, install the *CP210x VCP driver*
+   from Silicon Labs and replug the board. Some clone boards use a CH340 chip
+   instead — those need the CH340 driver.
+2. **Find the port.** Any of these works:
+   - **Device Manager** → *Ports (COM & LPT)* → e.g. "Silicon Labs CP210x USB to UART Bridge (COM5)".
+   - **Arduino IDE** → *Tools → Port* → pick the entry that appears when you plug the board in.
+   - **Arduino CLI** → `arduino-cli board list` lists the port, board name and FQBN.
+3. **Compile and upload** from the repository root (the settings come from `sketch.yaml`, 8 MB):
+   ```
+   arduino-cli compile --upload -p COM5 esp32s3/vrata
+   ```
+4. **Watch the log** (`Ctrl+C` to stop):
+   ```
+   arduino-cli monitor -p COM5 -c baudrate=115200
+   ```
+
+### Flashing on Linux
+
+1. **Permission** (once, then log out and back in):
+   ```bash
+   sudo usermod -aG dialout $USER
+   ```
+2. **Find the port.** After plugging the board in:
+   ```bash
+   arduino-cli board list          # port, board name and FQBN
+   ls /dev/ttyUSB* /dev/ttyACM*    # ttyUSB0 = UART socket, ttyACM0 = USB socket
+   ```
+   `dmesg | tail` right after plugging it in also names the new port.
+3. **Compile and upload** from the repository root:
+   ```bash
+   arduino-cli compile --upload -p /dev/ttyUSB0 esp32s3/vrata
+   ```
+4. **Watch the log** (`Ctrl+C` to stop):
+   ```bash
+   arduino-cli monitor -p /dev/ttyUSB0 -c baudrate=115200
+   ```
+
+### If the upload fails
+
+- **No port at all** → wrong driver (Windows), missing `dialout` membership (Linux), or a charge-only USB cable.
+- **"Failed to connect"** → put the board in download mode by hand: hold **BOOT**, tap **RESET**, release **BOOT**, then upload again. The DevKitC-1 usually resets itself and this is not needed.
+- **Port busy** → close the serial monitor (or the Arduino IDE Serial Monitor) before uploading; an open port blocks the upload.
 
 ## Before flashing (`vrata/config.h` + `vrata/secrets.h`)
 Your private values go in **`secrets.h`**, which is not committed. Copy the template first:
