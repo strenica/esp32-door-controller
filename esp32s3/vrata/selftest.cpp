@@ -200,7 +200,7 @@ struct BookingProbe {
 
 const BookingProbe kBookingProbes[] = {
     {"James Alice-1234", true, "jamesalice", "1234"},
-    {"Ana \xC5\xA0" "olar - 902211", true, "anasolar", "902211"},  // "Ana Šolar - 902211"
+    {"Ana \xC5\xA0" "olar - 424242", true, "anasolar", "424242"},  // "Ana Šolar - 424242"
     {"Ana Novak-Kranjc-55667788", true, "ananovakkranjc", "55667788"},
     {"Seja 2024-25", false, "", ""},
     {"Trening U-12345678901", false, "", ""},
