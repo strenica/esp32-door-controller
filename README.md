@@ -143,6 +143,9 @@ How it behaves:
 2. Build it: *Sketch → Export Compiled Binary* in the Arduino IDE, or `arduino-cli compile --export-binaries esp32s3/vrata` (writes `esp32s3/vrata/build/esp32.esp32.esp32s3/vrata.ino.bin`).
 3. Upload `vrata.ino.bin` — **not** `.merged.bin` — on **Programska oprema** (firmware). The version is read from the file.
 4. Assign it to the doors you want. Each door installs it at its next contact, restarts, and must reach the server again within 10 minutes. Otherwise it goes back to the previous version and the monitoring page shows the version as rejected.
+5. **A version that fails to download three times is blacklisted on that door** (stored in its settings) and never offered again — raise `FW_VERSION` and upload again. This is easy to trigger by accident: doors download from `base_url`, so if that points somewhere they can't reach, every attempt fails and the version is burned.
+
+The door confirms a new version the moment it reaches the server — usually seconds after the reboot — so the 10-minute window only runs out if it genuinely cannot connect. Once confirmed, the update is permanent.
 
 ### Wi-Fi from the server
 On the door's page (*Wi-Fi naprave*), tick "Wi-Fi omrežja nastavlja strežnik" (Wi-Fi networks are set by the server) and enter up to 3 networks. If the door can't connect with the new networks within 5 minutes, it returns to its previous ones and reports this in monitoring. Without the tick, the door keeps its own networks.
