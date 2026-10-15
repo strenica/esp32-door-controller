@@ -1,5 +1,5 @@
 // ============================================================================
-//  VRATA - calendar-driven door controller, ESP32-S3 port of the RPi5 version
+//  VRATA - calendar-driven door controller for the ESP32-S3
 //
 //  The door relay opens while an event of the door's calendar is in progress.
 //  The server (DEFAULT_SERVER_URL in config.h) decides per door whether it is locked (0),
@@ -12,7 +12,7 @@
 //  Board:   ESP32S3 Dev Module (esp32 core 3.x), see the root README.md
 //  Config:  config.h (pins, defaults, intervals), secrets.h (private values)
 //
-//  Task layout (the Pi used separate processes started by cron):
+//  Task layout:
 //    control (prio 4)  relay decision every 250 ms, BOOT button, portal phones
 //    net     (prio 2)  Wi-Fi, NTP, server sync, calendar downloads/parsing, OTA
 //    web     (prio 2)  control panel (port 5000), captive DNS

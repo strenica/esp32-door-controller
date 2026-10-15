@@ -1,6 +1,6 @@
 // Serial logging with a RAM ring buffer (shown at /log in the web UI).
-// Replaces the print() output of the Python scripts, which went to
-// /dev/null via cron; here it goes to the USB serial port at 115200 baud.
+// Log lines go to the serial port at 115200 baud, and the most recent ones
+// stay in the ring buffer for the web pages.
 #pragma once
 #include <Arduino.h>
 

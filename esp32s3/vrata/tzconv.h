@@ -1,4 +1,4 @@
-// Minimal timezone support replacing pytz on the Pi.
+// Minimal timezone support: TZID -> POSIX TZ rule.
 //
 // There is no IANA tz database on the ESP32, so each zone is described by a
 // POSIX TZ rule ("CET-1CEST,M3.5.0,M10.5.0/3"). A built-in table maps common
@@ -34,8 +34,7 @@ int32_t utcOffsetAt(const Rule& r, int64_t utc);
 inline int64_t utcToLocal(const Rule& r, int64_t utc) { return utc + utcOffsetAt(r, utc); }
 
 // Wall clock -> UTC. Ambiguous times (autumn) resolve to standard time and
-// non-existent times (spring gap) use the standard offset, which is what
-// pytz's localize(is_dst=False) did in the original.
+// non-existent times (spring gap) use the standard offset.
 int64_t localToUtc(const Rule& r, int64_t localSecs);
 
 // POSIX rule for a TZID, or nullptr. Case-insensitive; path prefixes such as

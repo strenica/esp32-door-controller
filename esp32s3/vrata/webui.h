@@ -1,4 +1,4 @@
-// Local control panel on port 5000 (replaces the Flask app of the Pi).
+// Local control panel on port 5000.
 //
 // Same look, buttons and messages as before. While the door is managed by the
 // server the page is read-only (status only); it becomes editable when the

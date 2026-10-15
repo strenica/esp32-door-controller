@@ -1,9 +1,7 @@
 // Streaming iCalendar (RFC 5545) parser + recurrence expander.
 //
-// Replaces the Python packages icalendar + recurring_ical_events used by
-// the original implementation. The file is read line by line (RAM use does not depend on the file
-// size) and only occurrences overlapping [windowStart, windowEnd] are kept,
-// exactly like recurring_ical_events.of(cal).between(now-2d, now+10d).
+// The file is read line by line (RAM use does not depend on the file size)
+// and only occurrences overlapping [windowStart, windowEnd] are kept.
 //
 // Supported: VEVENT with DTSTART/DTEND/DURATION (UTC, TZID or floating),
 // RRULE FREQ=DAILY|WEEKLY|MONTHLY|YEARLY with INTERVAL, COUNT, UNTIL, BYDAY

@@ -1,22 +1,22 @@
 // ============================================================================
-//  VRATA - ESP32-S3 port of the RPi5 calendar-driven door controller.
+//  VRATA - ESP32-S3 calendar-driven door controller.
 //  Central configuration: every pin and tunable lives here.
 //  Requires the "esp32 by Espressif Systems" Arduino core 3.x (tested 3.3.12).
 // ============================================================================
 //
 //  WIRING (ESP32-S3-DevKitC-1 or any ESP32-S3 module)
 //  ---------------------------------------------------------------------------
-//  ESP32-S3 pin   Relay board / part           RPi5 original (40-pin header)
+//  ESP32-S3 pin   Relay board / part
 //  ---------------------------------------------------------------------------
-//  5V (VBUS)      relay board VCC (red)        pin 2/4  5V
-//  GND            relay board GND (black)      pin 6    GND
-//  GPIO4          relay board IN  (purple)     pin 16   GPIO23
-//  GPIO0          on-board BOOT button         - (new: setup network, resets)
-//  (GPIO2)        optional status LED          - (new, disabled by default)
+//  5V (VBUS)      relay board VCC (red)
+//  GND            relay board GND (black)
+//  GPIO4          relay board IN  (purple)
+//  GPIO0          on-board BOOT button (setup network, resets)
+//  (GPIO2)        optional status LED (disabled by default)
 //  ---------------------------------------------------------------------------
-//  The same 1-channel relay board and 3-wire cable are reused. The Pi drove
-//  GPIO23 HIGH while the door had to be OPEN, so the input is active-HIGH
-//  and 3.3 V logic is already proven to switch it.
+//  The relay input is active-HIGH: 3.3 V on GPIO4 closes the contact that
+//  opens the door. A 1-channel relay board switching from 3.3 V logic is
+//  what this expects (RELAY_ACTIVE_HIGH below).
 //  Recommended: 10 kOhm GPIO4 -> GND so the relay stays OFF (door locked)
 //  while the ESP32 is in reset and the pin floats.
 //
@@ -48,7 +48,7 @@
 
 // ---------------------------------------------------------------- pins -----
 #define PIN_RELAY               4
-#define RELAY_ACTIVE_HIGH       1     // 1 = HIGH opens the door (as on the Pi)
+#define RELAY_ACTIVE_HIGH       1     // 1 = HIGH on GPIO4 opens the door
 #define PIN_BUTTON              0     // BOOT button, active LOW
 #define PIN_STATUS_LED          -1    // e.g. 2 for an LED on GPIO2; -1 = none
 #define STATUS_LED_ACTIVE_HIGH  1     // LED mirrors the relay state
@@ -80,7 +80,6 @@
 #define ADMIN_USERNAME              "admin"
 // Local web page password (http://<ip>:5000), user "admin". Override in
 // secrets.h and change it before flashing; the default is a placeholder.
-// The Pi's scrypt hash cannot be imported.
 #ifndef DEFAULT_ADMIN_PASSWORD
 #define DEFAULT_ADMIN_PASSWORD      "change-me-please"
 #endif
@@ -89,8 +88,8 @@
 #define DEFAULT_LOCAL_CALENDAR_URL  ""
 #endif
 
-// Up to three Wi-Fi networks, tried by signal strength (the Pi had three
-// saved networks). Can also be set on the server or in the door's web page.
+// Up to three Wi-Fi networks, tried by signal strength. Can also be set on
+// the server or in the door's web page.
 // SSIDs with non-ASCII letters (e.g. "Šola") work; keep this file UTF-8.
 // Override any of these in secrets.h.
 #define WIFI_MAX_NETWORKS           3
@@ -114,7 +113,7 @@
 #endif
 
 // ------------------------------------------------------------- network -----
-#define WEB_PORT                    5000   // same as Flask, as in the manual
+#define WEB_PORT                    5000   // local control panel
 #define AP_SSID_PREFIX              "VRATA-SETUP-"
 // WPA2, at least 8 characters. The default below is public, so anyone in
 // Wi-Fi range could join a door's setup network while it is being put into
@@ -154,18 +153,18 @@
 // ---------------------------------------------------------- scheduling -----
 #define SCHEDULE_REBUILD_INTERVAL_MS  (5UL * 60UL * 1000UL)
 #define NET_RETRY_AFTER_FAILURE_MS    (60UL * 1000UL)
-#define CONTROL_LOOP_MS               250UL    // relay + button (the Pi: 5 s)
-// Same look-ahead window as the Pi: now - 2 days .. now + 10 days
+#define CONTROL_LOOP_MS               250UL    // relay + button polling
+// Look-ahead window: now - 2 days .. now + 10 days
 #define WINDOW_PAST_S                 (2L * 86400L)
 #define WINDOW_FUTURE_S               (10L * 86400L)
-// As before: "dtend = DTEND if present else dtstart + 1 hour"
+// An event with no DTEND runs for one hour.
 #define DEFAULT_EVENT_DURATION_S      3600
-// All-day events crashed the Pi's parser (a date has no astimezone()). They are
+// All-day events have no time of day, so they cannot be scheduled. They are
 // ignored by default; 1 = keep the door open for the whole day instead.
 #define ALLDAY_EVENTS_ACTIVATE        0
 #define MAX_OCCURRENCES               400
-// Manual ON (Start on the Pi's page) lived in /tmp and was lost on reboot.
-// Kept that way (a door should not come back open by itself) unless 1.
+// Manual ON is not restored after a reboot - a door should not come back
+// open by itself. 1 = restore the previous manual state.
 #define RESTORE_MANUAL_ON_AT_BOOT     0
 
 // ---------------------------------------------------------------- HTTP -----
@@ -176,7 +175,7 @@
 #define MAX_ICS_BYTES            (1024UL * 1024UL)
 #define MAX_API_BYTES            (32UL * 1024UL)
 // 1 = verify HTTPS certificates against the Mozilla root store built into
-// the ESP32 core (same trust model as python-requests/certifi on the Pi).
+// the ESP32 core.
 // 0 = accept any certificate: never in production, because a fake server
 // could then open the doors.
 #define TLS_VERIFY               1

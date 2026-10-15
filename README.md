@@ -182,8 +182,8 @@ Back up the database with phpMyAdmin → **Izvoz** (Export). Everything (doors, 
 
 # Firmware
 
-The ESP32-S3 port of a Raspberry Pi 5 calendar-driven door controller. Each door
-opens its relay while an event in its calendar is in progress.
+ESP32-S3 firmware for one door. Each door opens its relay while an event in its
+calendar is in progress.
 
 A local page on **port 5000** shows the door's state. You can change settings
 there only while the server is unreachable, so the door stays usable when the
@@ -192,39 +192,26 @@ internet is down.
 The firmware uses no third-party libraries, only what ships with the ESP32
 Arduino core.
 
-| Original (Raspberry Pi 5) | This version (ESP32-S3) |
-|---|---|
-| Flask web UI + templates | `webui.cpp`, `auth.cpp` (local page) and the server website |
-| iCal parsing (icalendar, recurring_ical_events, pytz) | `ical.cpp`, `tzconv.cpp`, `schedule.cpp` |
-| Manual override, lock file, cron jobs | `controller.cpp` (modes, FreeRTOS tasks) |
-| Calendar and status endpoints | `cloud.cpp` ↔ `server/oss/api/door.php` |
-| Calendar download shell scripts (wget) | `fetch.cpp` |
-| State files on disk | NVS (`settings.cpp`) + LittleFS (`storage.cpp`) |
-| GPIO switching (`pinctrl`) | `relay.cpp` (GPIO4) |
-| NetworkManager, timesyncd, hostname file | `netmgr.cpp`; the name comes from the server |
-| Remote shell access | firmware updates from the server, `/update`, `/log` |
-| Standalone gym-door firmware | `portal.cpp` (users and PINs now on the server) |
-
 ## Parts per door
 
 | Part | Notes |
 |---|---|
 | ESP32-S3 development board, **8 MB flash recommended** | e.g. ESP32-S3-DevKitC-1 N8R2, N8R8 or N16R8. PSRAM is not needed. |
-| 5 V USB power supply, at least 1 A | Replaces the 5 V / 3 A Pi supply |
+| 5 V USB power supply, at least 1 A | Powers the board and the relay board |
 | USB cable that carries data | Only needed for the first flash |
-| **Existing** 1-channel relay board, enclosure and 3-wire cable | Unchanged from the Pi build |
+| 1-channel relay board, enclosure and 3-wire cable | Must switch reliably from 3.3 V logic — see below |
 | 10 kΩ resistor (recommended) | GPIO4 → GND, keeps the door locked while the board starts |
 
 ## Wiring
 
-| ESP32-S3 | Relay board | Was on the Pi (40-pin header) |
-|---|---|---|
-| 5V | VCC | pin 4 (5 V) |
-| GND | GND | pin 6 (GND) |
-| **GPIO4** | IN | pin 16 (**GPIO23**) |
-| BOOT (GPIO0) | – | on-board button: short press = setup network for 10 min, hold 10 s = local password reset, hold 30 s = factory reset |
+| ESP32-S3 | Relay board |
+|---|---|
+| 5V | VCC |
+| GND | GND |
+| **GPIO4** | IN |
+| BOOT (GPIO0) | – (on-board button: short press = setup network for 10 min, hold 10 s = local password reset, hold 30 s = factory reset) |
 
-- **Signal level.** The Pi drove GPIO23 HIGH (3.3 V) to open the door, so the relay board already works with 3.3 V logic (`RELAY_ACTIVE_HIGH 1`).
+- **Signal level.** GPIO4 is driven HIGH (3.3 V) to open the door (`RELAY_ACTIVE_HIGH 1`), so the relay board must switch from 3.3 V logic.
 - **Pins.** All pins are defined in `vrata/config.h`, which also lists the pins that were avoided and why.
 - **Gym door:** the relay only controls the electric lock. Make sure the door can always be opened **from inside** by its handle or an exit button.
 
@@ -375,30 +362,21 @@ cp esp32s3/vrata/secrets.sample.h esp32s3/vrata/secrets.h
 | BOOT hold 30 s | factory reset: settings, Wi-Fi, server key and calendars erased. The door then appears on the server as new (adopt it as a *replacement* for its old entry to keep its settings) |
 | Serial 115200 / `http://<ip>:5000/log` | log; `/api/status` gives JSON |
 
-## Differences from the RPi5 version
+## Behaviour notes and limits
 
-Fixed bugs (agreed before porting):
-1. **Events start on time.** The door opens within about 1 s of the start; the Pi could be up to 5 minutes late.
-2. **Remote status 1 → 3 no longer leaves the door forced open.**
-3. **Local and group calendars no longer overwrite each other.** They are stored as separate files.
-4. **All-day events are ignored** (`ALLDAY_EVENTS_ACTIVATE`) instead of crashing the scheduler.
-5. **GPIO12 is no longer driven on Stop.**
-
-New compared with the Pi:
-
-6. **The server replaces the old CSV/status endpoints and cron.** Each door has its own key, the server doesn't publish the calendar links, and settings, monitoring and the log live on the website.
-7. **The local page is read-only while the server is reachable.** The Pi's page was always editable.
-8. **Manual ON comes back locked after a power cut, as on the Pi.** If the server still says OPEN, the first contact opens the door again.
-9. **Every calendar download is validated** (`BEGIN:`/`END:VCALENDAR`) before it replaces the stored one.
-10. **The local password** uses PBKDF2 instead of scrypt (the old hash can't be imported). Logins are throttled and forms have CSRF protection.
-11. **Timezones:** a built-in table plus the calendar's own VTIMEZONE blocks. Unknown zones are skipped, as on the Pi.
-12. **Recurrence rules:** BYWEEKNO, BYYEARDAY, BYHOUR/BYMINUTE and hourly repeats aren't supported; such an event uses only its first date. Google's editor doesn't produce these.
-13. **Limits:** the calendar file can be at most 1 MB, with up to 400 occurrences in the 12-day window.
-14. **No battery clock:** after a power cut the schedule waits for NTP (193.2.4.6 first). Until then the door stays locked; OPEN and unlock still work.
-15. **Changes from the gym firmware:**
-    - users, PINs and the admin password moved to the server, so there's no admin page and no serial commands on the open network;
-    - the network name and unlock time are set per door;
-    - the door additionally follows its status/calendar like every other door.
+- **Events start on time** — within about 1 s of the event's start.
+- **The server holds the settings, the monitoring and the log.** Each door has its own key, and the calendar links are never published.
+- **The local page is read-only while the server is reachable.** It becomes editable once the server has been unreachable for three poll intervals.
+- **Manual ON is not restored after a reboot or power cut** — a door should not come back open by itself. If the server still says OPEN, the first contact opens the door again.
+- **Every calendar download is validated** (`BEGIN:` / `END:VCALENDAR`) before it replaces the stored one.
+- **Local and group calendars are stored separately**, so they can never overwrite each other.
+- **All-day events are ignored** (`ALLDAY_EVENTS_ACTIVATE`).
+- **Passwords** use PBKDF2-HMAC-SHA256. Logins are throttled and forms are CSRF-protected.
+- **Timezones:** a built-in TZID table plus the calendar's own VTIMEZONE blocks. Unknown zones are skipped.
+- **Recurrence rules:** BYWEEKNO, BYYEARDAY, BYHOUR/BYMINUTE and hourly repeats aren't supported; such an event uses only its first date. Google's editor doesn't produce these.
+- **Limits:** the calendar file can be at most 1 MB, with up to 400 occurrences in the 12-day window.
+- **No battery clock:** after a power cut the schedule waits for NTP (193.2.4.6 first). Until then the door stays locked; OPEN and unlock still work.
+- **The PIN portal is configured entirely on the server** — permanent users, PINs, the network name, the unlock time. The open network carries no admin page and no serial commands.
 
 ## Test checklist (real hardware)
 

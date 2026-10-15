@@ -26,8 +26,8 @@ void begin() {
 }
 
 void set(bool on) {
-  // Re-written every cycle like the Pi re-ran pinctrl every 5 s; cheap and
-  // self-healing if something else ever touched the pin.
+  // Re-written every cycle: cheap, and self-healing if something else ever
+  // touched the pin.
   digitalWrite(PIN_RELAY, level(on, RELAY_ACTIVE_HIGH));
 #if PIN_STATUS_LED >= 0
   digitalWrite(PIN_STATUS_LED, level(on, STATUS_LED_ACTIVE_HIGH));

@@ -88,7 +88,7 @@ void redirect(const String& to) {
 
 auth::Session* session() { return auth::sessionFromCookie(s_server.header("Cookie")); }
 
-// Flask-Login's @login_required
+// != nullptr, or the caller has already been redirected to /login.
 auth::Session* requireLogin() {
   auth::Session* s = session();
   if (!s) redirect("/login");

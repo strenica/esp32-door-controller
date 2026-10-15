@@ -1,5 +1,4 @@
-// HTTP(S) transfers (replaces requests.get() and the Pi's calendar wget
-// scripts).
+// HTTP(S) transfers: calendars, the server API and firmware downloads.
 //
 // Certificates are verified against the Mozilla root store compiled into
 // the ESP32 core. Only one transfer runs at a time (a TLS session needs

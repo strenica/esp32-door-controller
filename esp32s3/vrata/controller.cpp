@@ -281,8 +281,8 @@ void begin() {
   const settings::Data cfg = settings::get();
   Mode m = cfg.mode <= 3 ? static_cast<Mode>(cfg.mode) : Mode::Stopped;
   if (m == Mode::ManualOn && !RESTORE_MANUAL_ON_AT_BOOT) {
-    // The Pi lost the /tmp lock file on reboot, so the door came back locked;
-    // if the server still says OPEN, the first contact opens it again.
+    // A door should not come back open by itself after a reboot; if the
+    // server still says OPEN, the first contact opens it again.
     m = Mode::Stopped;
     LOGI("ctl", "manual ON is not restored after a reboot (the server decides)");
   }

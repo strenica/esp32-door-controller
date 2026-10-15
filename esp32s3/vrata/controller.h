@@ -1,5 +1,5 @@
-// Operating modes and background jobs (replaces the Pi's cron jobs, lock file,
-// calendar scheduler and manual-override script).
+// Operating modes and background jobs: the relay decision, calendar jobs,
+// the BOOT button and portal phones.
 //
 // The mode comes from the server's status for this door:
 //   0 LOCK -> Stopped, 1 OPEN -> ManualOn, 2 SCHEDULE REMOTE -> RemoteSchedule

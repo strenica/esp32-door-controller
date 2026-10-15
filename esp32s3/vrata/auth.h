@@ -1,10 +1,8 @@
-// Login, password storage and sessions (replaces Flask-Login + Werkzeug).
+// Login, password storage and sessions.
 //
-// Werkzeug stored scrypt(N=32768, r=8) hashes, which need 32 MB of RAM to
-// verify, so the port uses PBKDF2-HMAC-SHA256 (hardware SHA) instead. The
-// Pi's stored hash therefore cannot be carried over.
-// Sessions are random 128-bit cookies kept in RAM (lost on reboot), each with
-// its own CSRF token and pending "flash" messages.
+// Passwords are PBKDF2-HMAC-SHA256 (hardware SHA), salted per password and
+// compared in constant time. Sessions are random 128-bit cookies kept in RAM
+// (lost on reboot), each with its own CSRF token and pending "flash" messages.
 #pragma once
 #include <Arduino.h>
 
@@ -38,7 +36,7 @@ Session* createSession();
 void endSession(Session* s);
 void endAllSessions();  // safe from any task
 
-// Brute-force protection (new; Flask had none).
+// Brute-force protection: after LOGIN_MAX_FAILURES the page locks out.
 bool lockedOut(uint32_t& secondsLeft);
 void noteFailure();
 void noteSuccess();

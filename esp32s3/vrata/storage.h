@@ -1,9 +1,8 @@
-// LittleFS storage for the downloaded calendars (was a directory on the Pi).
+// LittleFS storage for the downloaded calendars.
 //
-// The Pi kept ONE calendar file that both the local and the remote
-// download overwrote, so in status 3 the two fought over the same file.
-// The port keeps one file per source and evaluates the one that matches the
-// current mode.
+// One file per source (the door's own calendar and the group calendar), so
+// they can never overwrite each other; the relay decision reads whichever one
+// matches the current mode.
 #pragma once
 #include <Arduino.h>
 
