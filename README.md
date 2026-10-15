@@ -19,6 +19,58 @@ deploy/php/         Dockerfile for the local test server
 compose.yaml        local test stack: MariaDB + PHP/Apache
 ```
 
+## Quick setup
+
+Nothing to a working door. Each step links to the long version further down.
+
+**1. Get the code**
+```bash
+git clone https://github.com/strenica/esp32-door-controller
+cd esp32-door-controller
+```
+
+**2. Start the management server** (Docker; nothing installed on the host)
+```bash
+cp server/oss/config.docker.php server/oss/config.php
+```
+Then edit `config.php` and set `base_url` to **this machine's LAN address**
+(`http://192.168.1.10:8000`, not `localhost` — doors download firmware from it,
+and on a door `localhost` means itself).
+```bash
+docker compose up -d
+```
+Open <http://localhost:8000/install.php> and create the first administrator.
+→ [Server](#server)
+
+**3. Configure the firmware**
+```bash
+cp esp32s3/vrata/secrets.sample.h esp32s3/vrata/secrets.h
+```
+Edit `secrets.h`: server address, local admin password, setup-network password.
+Skipping this is allowed — the firmware then uses the placeholder values in
+[Default credentials](#default-credentials).
+
+**4. Flash a board.** Erase first, or a used board keeps its old Wi-Fi and server key.
+```bash
+~/.arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool --port /dev/ttyACM0 erase-flash
+arduino-cli compile --upload -p /dev/ttyACM0 esp32s3/vrata
+```
+→ [Wiping the flash first](#wiping-the-flash-first) · [Build and flash](#build-and-flash)
+
+**5. Put the door into service.** Join `VRATA-SETUP-xxxx`, open
+<http://192.168.4.1:5000/>, log in as `admin`, enter the site Wi-Fi. The door then
+appears on the server under **Vrata → Nove naprave**; check its pairing code
+against the door's own page and press **Sprejmi**.
+→ [Putting a door into service](#putting-a-door-into-service)
+
+**6. Updating later.** Raise `FW_VERSION` first — a door skips the version it is already running.
+```bash
+arduino-cli compile --export-binaries esp32s3/vrata
+```
+Upload `esp32s3/vrata/build/esp32.esp32.esp32s3/vrata.ino.bin` (**not**
+`.merged.bin`) on **Programska oprema** and assign it to doors.
+→ [Firmware updates](#firmware-updates)
+
 ---
 
 # Server
@@ -45,26 +97,19 @@ and receives its settings.
 - MySQL 8.0 / MariaDB 10.5+.
 - **HTTPS with a valid certificate.** The doors refuse servers whose certificate they can't verify.
 
-## Quick start (local test)
+## Local test stack
 
-The whole test stack runs in containers; nothing is installed on the host.
-Run these from the repository root:
+`compose.yaml` runs the website and the database in containers, which is the
+quickest way to try the site without a web host. See [Quick setup](#quick-setup)
+steps 1–2 for the commands. When you are done:
 
 ```bash
-git clone https://github.com/strenica/esp32-door-controller
-cd esp32-door-controller
-cp server/oss/config.docker.php server/oss/config.php
-docker compose up -d
+docker compose down -v     # -v also drops the database volume
 ```
 
-Then open <http://localhost:8000/install.php> and create the first
-administrator. Tear down with `docker compose down -v` (the `-v` also drops the
-database volume).
-
-To test with a **real door** on the same network, change `base_url` in
-`config.php` to this machine's LAN address (e.g. `http://192.168.1.10:8000`) and
-set the door's server URL to the same. The doors download their firmware from
-`base_url`, so `localhost` will not work for them.
+To point a **real door** at this stack, set `base_url` in `config.php` to this
+machine's LAN address and set the door's server URL to the same — see
+[Quick setup](#quick-setup) step 2.
 
 ## Installation (phpMyAdmin)
 1. **Keep a copy of the old site.** Rename the old `oss` folder (e.g. `oss_old`), or download it first.
