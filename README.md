@@ -332,15 +332,27 @@ cp esp32s3/vrata/secrets.sample.h esp32s3/vrata/secrets.h
 ```
 
 - `DEFAULT_SERVER_URL` (`secrets.h`): address of your management server, no trailing slash, with a valid HTTPS certificate.
-- `DEFAULT_ADMIN_PASSWORD` (`secrets.h`): password of the door's **local** page (user `admin`). Change it from the placeholder.
+- `DEFAULT_ADMIN_PASSWORD` (`secrets.h`): password of the door's **local** page (user `admin`). Change it from `change-me-please`.
 - `DEFAULT_WIFI1_SSID/PASSWORD` … `3` (`secrets.h`): optional. You can also enter them later through the setup network, or set them on the server.
-- `AP_PASSWORD` (`secrets.h`): password of the setup network (`VRATA-SETUP-xxxx`). The default in `config.h` is public, so set your own before flashing.
+- `AP_PASSWORD` (`secrets.h`): password of the setup network (`VRATA-SETUP-xxxx`). Set your own — the `config.h` default (`vrata-setup`) is public.
 - `FW_VERSION` (`config.h`): raise it for every new release, e.g. `2.0.1`. The server reads it from the uploaded file, and a door installs only a version it isn't already running.
 
 `secrets.h` is optional: without it the generic defaults in `config.h` apply and the sketch still compiles.
 
+### Default credentials
+
+What you need to reach a freshly flashed board, if you flash **without** a `secrets.h`:
+
+| Where | Login |
+|---|---|
+| Setup network `VRATA-SETUP-xxxx` | password **`vrata-setup`** |
+| Local page `http://192.168.4.1:5000/` | user **`admin`**, password **`change-me-please`** |
+| Server URL it will try | `https://example.com/oss` — a placeholder, so it will not reach any real server |
+
+Copying `secrets.sample.h` to `secrets.h` changes the setup-network password to **`change-me-too`** (the sample sets `AP_PASSWORD`). Whatever your `secrets.h` says wins — check it there if the default does not work.
+
 ## Putting a door into service
-1. **Erase the flash, then flash the board** (see [Wiping the flash first](#wiping-the-flash-first)) — on a used board the old Wi-Fi and server key survive a normal upload. Power it up. With no Wi-Fi settings it opens `VRATA-SETUP-xxxx` (password from `AP_PASSWORD`). Connect a phone, open `http://192.168.4.1:5000/` and log in as `admin`. In *Settings*, enter the site Wi-Fi.
+1. **Erase the flash, then flash the board** (see [Wiping the flash first](#wiping-the-flash-first)) — on a used board the old Wi-Fi and server key survive a normal upload. Power it up. With no Wi-Fi settings it opens `VRATA-SETUP-xxxx` (default password `vrata-setup`). Connect a phone, open `http://192.168.4.1:5000/` and log in as `admin` (default password `change-me-please`). In *Settings*, enter the site Wi-Fi. Both defaults are listed under [Default credentials](#default-credentials).
 2. **The door appears on the server.** It contacts the server and shows up on the site's **Vrata → Nove naprave** (new devices) with a **pairing code**. The same code is shown on the door's page under *Status → Server* and in the serial log.
 3. **Adopt it.** If the codes match, press **Sprejmi** (accept) and give the door its name (V1 …) and group. The door collects its key within 30 s, then follows the server: status, calendar, portal, intervals.
 4. **The local page becomes read-only.** From now on it shows the door's state only. If the server can't be reached for 3 check intervals (at least 3 minutes), the page becomes editable.
