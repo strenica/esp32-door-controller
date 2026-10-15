@@ -252,25 +252,26 @@ keep using the USB socket (then the log appears there too).
 An upload replaces the firmware but **leaves NVS alone** — stored settings,
 Wi-Fi credentials, the server key and the pairing code all survive. A board that
 was configured before comes back with its old state, which looks like the new
-firmware was ignored. For a new door, erase first:
+firmware was ignored. For a new door, erase first.
+
+**Call the bundled esptool by its full path.** Most Linux machines have two and a
+bare `esptool` picks the wrong one:
+
+| Which | Version | Erase command | Works? |
+|---|---|---|---|
+| Bundled with the ESP32 core | 5.x | `erase-flash` | yes |
+| Debian/Ubuntu `esptool` package | 4.x | `erase_flash` | no |
+
+The Debian package rejects `erase-flash` (`invalid choice`) *and* ships without
+the ESP32-S3 stub flasher, so `erase_flash` there fails too with
+`FileNotFoundError: ...stub_flasher_32s3.json`. Use the full path:
 
 ```bash
-esptool --port /dev/ttyUSB0 erase-flash     # Linux
-esptool --port COM5 erase-flash             # Windows
-```
-
-**Two esptools exist and they use opposite command names:**
-
-| Which | Version | Erase command |
-|---|---|---|
-| Bundled with the ESP32 core — **use this one** | 5.x | `erase-flash` |
-| Debian/Ubuntu `esptool` package | 4.x | `erase_flash` |
-
-Debian's is also packaged without the ESP32-S3 stub flasher and dies with
-`FileNotFoundError: ...stub_flasher_32s3.json`, so reach for the bundled copy:
-
-```bash
+# Linux
 ~/.arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool --port /dev/ttyUSB0 erase-flash
+
+# Windows — same idea, adjust the version folder if yours differs
+%LOCALAPPDATA%\Arduino15\packages\esp32\tools\esptool_py\5.3.1\esptool.exe --port COM5 erase-flash
 ```
 
 Erasing removes the firmware too — **flash straight after**, or the board has
