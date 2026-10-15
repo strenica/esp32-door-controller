@@ -247,6 +247,36 @@ either socket.
 Either plug into the **UART** socket, or set *USB CDC On Boot* to **Enabled** and
 keep using the USB socket (then the log appears there too).
 
+### Wiping the flash first
+
+An upload replaces the firmware but **leaves NVS alone** — stored settings,
+Wi-Fi credentials, the server key and the pairing code all survive. A board that
+was configured before comes back with its old state, which looks like the new
+firmware was ignored. For a new door, erase first:
+
+```bash
+esptool --port /dev/ttyUSB0 erase-flash     # Linux
+esptool --port COM5 erase-flash             # Windows
+```
+
+**Two esptools exist and they use opposite command names:**
+
+| Which | Version | Erase command |
+|---|---|---|
+| Bundled with the ESP32 core — **use this one** | 5.x | `erase-flash` |
+| Debian/Ubuntu `esptool` package | 4.x | `erase_flash` |
+
+Debian's is also packaged without the ESP32-S3 stub flasher and dies with
+`FileNotFoundError: ...stub_flasher_32s3.json`, so reach for the bundled copy:
+
+```bash
+~/.arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool --port /dev/ttyUSB0 erase-flash
+```
+
+Erasing removes the firmware too — **flash straight after**, or the board has
+nothing to boot. If you'd rather not, flash first and then hold **BOOT for 30 s**
+on the running firmware: that clears NVS and the calendars and keeps the app.
+
 ### Flashing on Windows
 
 1. **Driver.** The UART socket is a Silicon Labs CP2102N bridge; Windows normally
@@ -309,7 +339,7 @@ cp esp32s3/vrata/secrets.sample.h esp32s3/vrata/secrets.h
 `secrets.h` is optional: without it the generic defaults in `config.h` apply and the sketch still compiles.
 
 ## Putting a door into service
-1. **Flash the board and power it.** Without Wi-Fi settings it opens `VRATA-SETUP-xxxx` (password from `AP_PASSWORD`). Connect a phone, open `http://192.168.4.1:5000/` and log in as `admin`. In *Settings*, enter the site Wi-Fi.
+1. **Erase the flash, then flash the board** (see [Wiping the flash first](#wiping-the-flash-first)) — on a used board the old Wi-Fi and server key survive a normal upload. Power it up. With no Wi-Fi settings it opens `VRATA-SETUP-xxxx` (password from `AP_PASSWORD`). Connect a phone, open `http://192.168.4.1:5000/` and log in as `admin`. In *Settings*, enter the site Wi-Fi.
 2. **The door appears on the server.** It contacts the server and shows up on the site's **Vrata → Nove naprave** (new devices) with a **pairing code**. The same code is shown on the door's page under *Status → Server* and in the serial log.
 3. **Adopt it.** If the codes match, press **Sprejmi** (accept) and give the door its name (V1 …) and group. The door collects its key within 30 s, then follows the server: status, calendar, portal, intervals.
 4. **The local page becomes read-only.** From now on it shows the door's state only. If the server can't be reached for 3 check intervals (at least 3 minutes), the page becomes editable.
